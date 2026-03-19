@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Designações">
+<meta name="theme-color" content="#1F3864">
+<title>Designações</title>
+<style>
+:root{--azul:#1F3864;--azul2:#2E75B6;--verde:#25D366;--bg:#F4F6FA;--card:#fff;--borda:#D8DDE8;--txt:#1A1A2E;--muted:#6B7280;--inp:#F0F3F8;--sh:0 2px 8px rgba(0,0,0,.09)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;padding-bottom:env(safe-area-inset-bottom,20px)}
+.hdr{background:var(--azul);color:#fff;padding:14px 16px;padding-top:calc(14px + env(safe-area-inset-top,0px));position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between}
+.hdr h1{font-size:17px;font-weight:600}
+.hbtn{background:rgba(255,255,255,.18);border:none;border-radius:20px;color:#fff;font-size:12px;font-weight:500;padding:6px 12px;cursor:pointer}
+.tabs{display:flex;background:var(--azul);border-top:1px solid rgba(255,255,255,.1)}
+.tab{flex:1;padding:10px 4px;color:rgba(255,255,255,.6);font-size:12px;text-align:center;cursor:pointer;border:none;background:none}
+.tab.active{color:#fff;border-bottom:2px solid #fff}
+.pg{display:none;padding:12px}.pg.active{display:block}
+
+/* CALENDÁRIO */
+.semsel{background:var(--card);border-radius:14px;box-shadow:var(--sh);margin-bottom:14px;overflow:hidden}
+.semsel-top{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--borda)}
+.semsel-label{font-size:13px;font-weight:600;color:var(--azul);text-align:center;flex:1}
+.semarr{background:none;border:none;font-size:24px;color:var(--azul2);cursor:pointer;padding:0 6px;line-height:1}
+.semsel-dias{display:grid;grid-template-columns:repeat(7,1fr);padding:10px 6px 6px;gap:3px}
+.semdia{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:10px}
+.semdia-nome{font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase}
+.semdia-num{font-size:15px;font-weight:700;color:var(--txt)}
+.semdia-ico{font-size:11px;height:15px;line-height:15px}
+.semdia.hoje{background:#EBF4FF}
+.semdia.hoje .semdia-nome{color:var(--azul)}
+.semdia.hoje .semdia-num{color:var(--azul)}
+.semdia.desig{background:#1F3864}
+.semdia.desig .semdia-nome{color:rgba(255,255,255,.7)}
+.semdia.desig .semdia-num{color:#fff}
+.semsel-leg{display:flex;gap:14px;justify-content:center;padding:6px 14px 12px;font-size:11px;color:var(--muted)}
+.leg{display:flex;align-items:center;gap:5px}
+.legdot{width:10px;height:10px;border-radius:3px}
+
+/* CARDS */
+.dcard{background:var(--card);border-radius:14px;box-shadow:var(--sh);margin-bottom:14px;overflow:hidden}
+.dhead{background:var(--azul);color:#fff;padding:10px 14px;font-size:14px;font-weight:600}
+.mhead{padding:7px 14px;font-size:12px;font-weight:600}
+.mc{background:#EBF4FF;color:#1F3864}.mq{background:#FFF0E5;color:#7B3600}
+.turno{padding:12px 14px;border-top:1px solid var(--borda)}
+.thora{font-size:13px;font-weight:600;color:var(--azul2);margin-bottom:8px}
+.fl label{font-size:11px;color:var(--muted);display:block;margin-bottom:3px;margin-top:6px}
+.fl input,.fl select{width:100%;padding:9px 11px;border:1px solid var(--borda);border-radius:10px;font-size:14px;background:var(--inp);color:var(--txt)}
+.fl input:focus,.fl select:focus{outline:none;border-color:var(--azul2);background:#fff}
+.fl select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:12px;padding-right:32px}
+.dr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.acoes{padding:12px;display:flex;flex-direction:column;gap:10px;position:sticky;bottom:0;background:var(--bg);border-top:1px solid var(--borda)}
+.bwpp{background:var(--verde);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 12px rgba(37,211,102,.35)}
+.bsav{background:var(--azul);color:#fff;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:500;cursor:pointer;width:100%}
+.bsec{background:none;color:var(--muted);border:1px solid var(--borda);border-radius:12px;padding:10px;font-size:13px;cursor:pointer}
+
+/* LISTAS */
+.lsec{margin-bottom:18px}
+.ltit{font-size:13px;font-weight:600;color:var(--azul);padding:0 2px 8px;border-bottom:2px solid var(--azul2);margin-bottom:10px}
+.lcard{background:var(--card);border-radius:14px;box-shadow:var(--sh);overflow:hidden;margin-bottom:10px}
+.li{display:grid;gap:8px;padding:10px 12px;border-bottom:1px solid var(--borda);align-items:center}
+.li:last-child{border-bottom:none}
+.lid{grid-template-columns:24px 1fr 1fr 32px}
+.lil{grid-template-columns:24px 1fr 32px}
+.lnum{font-size:12px;color:var(--muted);text-align:center;font-weight:600}
+.li input{padding:8px 10px;border:1px solid var(--borda);border-radius:9px;font-size:13px;background:var(--inp);color:var(--txt);width:100%}
+.li input:focus{outline:none;border-color:var(--azul2);background:#fff}
+.bdel{background:none;border:none;color:#E24B4A;font-size:20px;cursor:pointer;line-height:1;padding:0 4px}
+.badd{border:none;border-radius:12px;padding:10px;width:100%;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:10px;color:#fff}
+
+/* BANNER NOVA SEMANA */
+.bnova{background:#FFF8E1;border:1px solid #FFD54F;border-radius:12px;padding:12px 14px;margin-bottom:14px;display:none}
+.bnova.show{display:block}
+.bnova p{font-size:13px;color:#6D4C00;margin-bottom:10px;line-height:1.5}
+.bnova-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bbconfirm{background:#E24B4A;color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:600;cursor:pointer}
+.bbcancel{background:none;color:var(--muted);border:1px solid var(--borda);border-radius:10px;padding:10px;font-size:13px;cursor:pointer}
+
+/* WHATSAPP */
+.wfundo{background:#E5DDD5;border-radius:14px;padding:14px 10px;margin-bottom:14px}
+.wbolha{background:#fff;border-radius:0 12px 12px 12px;padding:13px 15px 10px;box-shadow:0 1px 3px rgba(0,0,0,.12);position:relative;max-width:97%}
+.wbolha::before{content:'';position:absolute;top:0;left:-8px;border:8px solid transparent;border-top-color:#fff;border-left:0}
+.whora{text-align:right;font-size:11px;color:#8696A0;margin-top:6px}
+.wtit{font-weight:700;font-size:15px;color:#1F3864;text-align:center;padding-bottom:10px;border-bottom:1.5px solid #E5DDD5;margin-bottom:8px}
+.wdia{display:inline-block;background:#2E75B6;color:#fff;font-weight:700;font-size:12px;border-radius:20px;padding:3px 13px;margin:10px 0 6px}
+.wmod{display:inline-block;font-weight:600;font-size:12px;border-radius:8px;padding:3px 10px;margin:4px 0}
+.wmc{background:#EBF4FF;color:#1F3864}.wmq{background:#FFF0E5;color:#7B3600}
+.wloc{font-size:12px;color:#667781;font-style:italic;margin:2px 0 5px 2px}
+.wt{display:flex;align-items:center;gap:8px;background:#F0F4F8;border-radius:10px;padding:7px 10px;margin-bottom:5px}
+.wth{font-size:12px;font-weight:700;color:#2E75B6;white-space:nowrap;min-width:96px}
+.wtn{font-size:13px;color:#111;flex:1}
+.wnome{font-weight:600}.wvaz{color:#bbb;font-style:italic;font-weight:400}
+.wsep{border:none;border-top:1px dashed #D5DDE5;margin:8px 0}
+.wrod{font-size:11px;color:#8696A0;font-style:italic;text-align:center;margin-top:10px;padding-top:8px;border-top:1px solid #E5DDD5}
+
+/* AJUDA */
+.ajc{background:var(--card);border-radius:14px;box-shadow:var(--sh);padding:16px;margin-bottom:14px}
+.ajc h3{font-size:15px;color:var(--azul);margin-bottom:10px}
+.ajc p{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:8px}
+.st{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
+.sn{background:var(--azul2);color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
+.st-t{font-size:13px;color:var(--txt);line-height:1.6}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 22px;border-radius:24px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1}
+.bkp-info{font-size:12px;color:var(--muted);background:#F8F9FA;border-radius:10px;padding:10px 12px;margin-bottom:10px;line-height:1.6}
+.bkp-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
+.bexp{background:var(--azul2);color:#fff;border:none;border-radius:12px;padding:12px;font-size:13px;font-weight:600;cursor:pointer}
+.bimp{background:#fff;color:var(--azul2);border:2px solid var(--azul2);border-radius:12px;padding:12px;font-size:13px;font-weight:600;cursor:pointer}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div><h1>📋 Designações</h1></div>
+  <button class="hbtn" onclick="salvar()">💾 Salvar</button>
+</div>
+<div class="tabs">
+  <button class="tab active" onclick="aba(0)">Designar</button>
+  <button class="tab"        onclick="aba(1)">Listas</button>
+  <button class="tab"        onclick="aba(2)">WhatsApp</button>
+  <button class="tab"        onclick="aba(3)">Relatório</button>
+  <button class="tab"        onclick="aba(4)">Ajuda</button>
+</div>
+
+<!-- ABA 0: DESIGNAR -->
+<div class="pg active" id="pg0">
+  <div class="semsel">
+    <div class="semsel-top">
+      <button class="semarr" onclick="mudarSemana(-1)">‹</button>
+      <div class="semsel-label" id="semLabel"></div>
+      <button class="semarr" onclick="mudarSemana(1)">›</button>
+    </div>
+    <div class="semsel-dias" id="semDias"></div>
+    <div class="semsel-leg">
+      <div class="leg"><span class="legdot" style="background:#1F3864"></span>Dia com designação</div>
+      <div class="leg"><span class="legdot" style="background:#EBF4FF;border:1px solid #B5D4F4"></span>Hoje</div>
+    </div>
+  </div>
+
+  <div class="bnova" id="bnova">
+    <p>🗓 Semana alterada. Quer limpar as designações actuais e começar a semana nova?</p>
+    <div class="bnova-btns">
+      <button class="bbcancel"  onclick="cancelarNova()">Manter</button>
+      <button class="bbconfirm" onclick="confirmarNova()">Limpar e começar</button>
+    </div>
+  </div>
+
+  <div id="prog"></div>
+  <div class="acoes">
+    <button class="bwpp" onclick="aba(2)">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Gerar texto para WhatsApp
+    </button>
+    <button class="bsec" onclick="limpar()">🗑 Limpar designações desta semana</button>
+  </div>
+</div>
+
+<!-- ABA 1: LISTAS -->
+<div class="pg" id="pg1">
+  <div class="lsec">
+    <div class="ltit">👤 Pessoas</div>
+    <button class="badd" style="background:var(--azul2)" onclick="addPessoa()">+ Adicionar pessoa</button>
+    <div class="lcard"><div id="listD"></div></div>
+  </div>
+  <div class="lsec">
+    <div class="ltit">📍 Locais</div>
+    <button class="badd" style="background:var(--azul)" onclick="addLocal()">+ Adicionar local</button>
+    <div class="lcard"><div id="listL"></div></div>
+  </div>
+  <button class="bsav" onclick="salvar()">💾 Salvar listas</button>
+
+  <div class="lsec" style="margin-top:18px">
+    <div class="ltit">🔒 Cópia de segurança</div>
+    <div class="bkp-info">O Android pode apagar os dados depois de semanas sem uso. Exporte uma cópia e importe quando precisar restaurar.</div>
+    <div class="bkp-btns">
+      <button class="bexp" onclick="exportar()">📤 Exportar</button>
+      <button class="bimp" onclick="document.getElementById('fImp').click()">📥 Importar</button>
+    </div>
+    <input type="file" id="fImp" accept=".json" style="display:none" onchange="importar(event)">
+  </div>
+  <div style="height:80px"></div>
+</div>
+
+<!-- ABA 2: WHATSAPP -->
+<div class="pg" id="pg2">
+  <p style="font-size:13px;color:var(--muted);padding:4px 0 12px">Pré-visualização da mensagem. Toque em copiar e cole no grupo.</p>
+  <div class="wfundo"><div class="wbolha"><div id="whtml"></div><div class="whora" id="whora"></div></div></div>
+  <div style="padding-bottom:80px">
+    <button class="bwpp" onclick="copiar()" style="width:100%">📋 Copiar e colar no WhatsApp</button>
+  </div>
+</div>
+
+
+<!-- ABA 3: RELATÓRIO -->
+<div class="pg" id="pg3">
+  <p style="font-size:13px;color:var(--muted);padding:4px 0 12px">Resumo das colocações da semana. Toque em copiar e cole no grupo.</p>
+  <div class="wfundo"><div class="wbolha"><div id="relBody"></div><div class="whora" id="relHora"></div></div></div>
+  <div style="padding-bottom:20px">
+    <button class="bwpp" onclick="copiarRel()" style="width:100%">📋 Copiar e colar no WhatsApp</button>
+  </div>
+</div>
+
+<!-- ABA 4: AJUDA -->
+<div class="pg" id="pg4">
+  <div class="ajc">
+    <h3>📱 Como adicionar à tela inicial</h3>
+    <div class="st"><div class="sn">1</div><div class="st-t"><b>iPhone (Safari):</b> Toque em compartilhar ↑ → "Adicionar à Tela de Início"</div></div>
+    <div class="st"><div class="sn">2</div><div class="st-t"><b>Android (Chrome):</b> Toque nos ⋮ → "Adicionar à tela inicial"</div></div>
+    <div class="st"><div class="sn">3</div><div class="st-t">Confirme — o ícone aparece como app normal</div></div>
+  </div>
+  <div class="ajc">
+    <h3>📅 Como funciona o calendário</h3>
+    <div class="st"><div class="sn">1</div><div class="st-t">Use as setas <b>‹ ›</b> para navegar entre semanas</div></div>
+    <div class="st"><div class="sn">2</div><div class="st-t">Terça, Quarta e Quinta ficam em azul escuro — são os dias com designações</div></div>
+    <div class="st"><div class="sn">3</div><div class="st-t">Ao mudar de semana o app pergunta se quer limpar as designações antigas</div></div>
+  </div>
+  <div class="ajc">
+    <h3>💡 Fluxo semanal</h3>
+    <div class="st"><div class="sn">1</div><div class="st-t">Em <b>Listas</b> cadastre os nomes das pessoas e os locais (faz uma vez)</div></div>
+    <div class="st"><div class="sn">2</div><div class="st-t">Navegue à semana certa com as setas e preencha os nomes</div></div>
+    <div class="st"><div class="sn">3</div><div class="st-t">Em <b>WhatsApp</b> copie e cole o texto no grupo</div></div>
+  </div>
+</div>
+
+<div class="toast" id="tst"></div>
+
+<script>
+const DIAS_BASE=[
+  {ds:2,nome:"Terça-Feira", modal:"CARRINHO",turnos:[{id:"t1",hora:"09:00 – 11:00"},{id:"t2",hora:"14:30 – 16:30"}]},
+  {ds:3,nome:"Quarta-Feira",modal:"CARRINHO",turnos:[{id:"t3",hora:"09:00 – 11:00"},{id:"t4",hora:"14:30 – 16:30"}]},
+  {ds:4,nome:"Quinta-Feira",modal:"QUIOSQUE",turnos:[{id:"t5",hora:"09:00 – 11:00"},{id:"t6",hora:"11:00 – 13:00"},{id:"t7",hora:"13:00 – 15:00"},{id:"t8",hora:"15:00 – 17:00"}]},
+];
+const DPT=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+const MPT=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+
+function ld(k,p){try{const v=localStorage.getItem(k);return v?JSON.parse(v):p;}catch(e){return p;}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+function segDeHoje(){const d=new Date();d.setHours(0,0,0,0);const dw=d.getDay();d.setDate(d.getDate()+(dw===0?-6:1-dw));return d;}
+function isoSeg(d){return d.toISOString().slice(0,10);}
+function segDeISO(iso){return new Date(iso+"T00:00:00");}
+function addD(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
+function fmt(d){return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0");}
+
+let semISO=ld("sem_v2",isoSeg(segDeHoje()));
+let semAnterior=semISO;
+
+const TDsn={};
+const TPes=[];
+const TLoc=[{nome:"Calçada – PPA / Praça do Coreto"},{nome:"Praça em frente à Prefeitura"},{nome:"Quiosque Central"}];
+
+let dsn=ld("d7",null); if(!dsn||Object.values(dsn).every(v=>!v.p1&&!v.p2)) dsn=TDsn;
+let pes=ld("p8",null); if(!pes||!pes.length) pes=TPes;
+let loc=ld("l7",null); if(!loc||loc.every(l=>!l.nome)) loc=TLoc;
+
+function getDatas(){
+  const seg=segDeISO(semISO);
+  return DIAS_BASE.map(cfg=>addD(seg,cfg.ds-1));
+}
+
+// ── CALENDÁRIO ────────────────────────────────────────────────────────────────
+function rCal(){
+  const seg=segDeISO(semISO);
+  const fim=addD(seg,6);
+  const mesA=seg.getDate()+" "+MPT[seg.getMonth()];
+  const mesB=fim.getDate()+" "+MPT[fim.getMonth()]+" "+fim.getFullYear();
+  document.getElementById("semLabel").textContent=mesA+" – "+mesB;
+
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const desigOffsets=DIAS_BASE.map(c=>c.ds-1); // 1,2,3 (ter,qua,qui desde seg)
+  const icos=["🛒","🛒","🏠"];
+  let h="";
+  for(let i=0;i<7;i++){
+    const d=addD(seg,i);
+    const eH=d.getTime()===hoje.getTime();
+    const iD=desigOffsets.indexOf(i);
+    const eD=iD>=0;
+    const cls="semdia"+(eD?" desig":eH?" hoje":"");
+    h+=`<div class="${cls}"><span class="semdia-nome">${DPT[d.getDay()]}</span><span class="semdia-num">${d.getDate()}</span><span class="semdia-ico">${eD?icos[iD]:""}</span></div>`;
+  }
+  document.getElementById("semDias").innerHTML=h;
+}
+
+function mudarSemana(dir){
+  col();
+  const seg=segDeISO(semISO);
+  seg.setDate(seg.getDate()+dir*7);
+  semAnterior=semISO;
+  semISO=isoSeg(seg);
+  sv("sem_v2",semISO);
+  rCal();
+  rP();
+  if(semISO!==semAnterior && Object.values(dsn).some(v=>v.p1||v.p2)){
+    document.getElementById("bnova").classList.add("show");
+  }
+}
+function confirmarNova(){dsn={};sv("d7",dsn);document.getElementById("bnova").classList.remove("show");rP();toast("✅ Nova semana iniciada!");}
+function cancelarNova(){document.getElementById("bnova").classList.remove("show");}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+const tabs=document.querySelectorAll(".tab");
+const pgs=document.querySelectorAll(".pg");
+function aba(i){
+  col();
+  tabs.forEach((t,j)=>t.classList.toggle("active",j===i));
+  pgs.forEach((p,j)=>p.classList.toggle("active",j===i));
+  if(i===0)rP();
+  if(i===1){rD();rL();}
+  if(i===2)rW();
+  if(i===3)rRel();
+}
+
+// ── DESIGNAR ──────────────────────────────────────────────────────────────────
+function nOpts(){return pes.filter(n=>n).map(n=>`<option value="${e(n)}">`).join("");}
+function lOpts(sel){
+  let o=`<option value="">— Selecionar local —</option>`;
+  loc.forEach(l=>{if(l.nome)o+=`<option value="${e(l.nome)}"${l.nome===sel?" selected":""}>${e(l.nome)}</option>`;});
+  o+=`<option value="__c">✏️ Digitar outro…</option>`;
+  return o;
+}
+function rP(){
+  const datas=getDatas();
+  const el=document.getElementById("prog");
+  let h=`<datalist id="nms">${nOpts()}</datalist>`;
+  DIAS_BASE.forEach((cfg,di)=>{
+    h+=`<div class="dcard"><div class="dhead">📅 ${cfg.nome}  ${fmt(datas[di])}</div>`;
+    h+=`<div class="mhead ${cfg.modal==="QUIOSQUE"?"mq":"mc"}">${cfg.modal==="QUIOSQUE"?"🏠 Quiosque":"🛒 Carrinho"}</div>`;
+    cfg.turnos.forEach(t=>{
+      const v=dsn[t.id]||{};
+      const ls=v.local||"";
+      const nl=loc.some(l=>l.nome===ls);
+      const sc=!nl&&ls;
+      h+=`<div class="turno"><div class="thora">⏰ ${t.hora}</div>
+        <div class="fl"><label>📍 Local</label><select id="lc_${t.id}" onchange="onL('${t.id}')">${lOpts(nl?ls:"")}</select></div>
+        <div class="fl" id="wc_${t.id}" style="display:${sc?"block":"none"}"><label>📍 Local (livre)</label><input type="text" id="lf_${t.id}" value="${e(sc?ls:"")}" placeholder="Descreva o local…"></div>
+        <div class="dr">
+          <div class="fl"><label>Pessoa 1</label><input type="text" list="nms" id="p1_${t.id}" value="${e(v.p1||"")}" placeholder="Nome…" autocomplete="off"></div>
+          <div class="fl"><label>Pessoa 2</label><input type="text" list="nms" id="p2_${t.id}" value="${e(v.p2||"")}" placeholder="Nome…" autocomplete="off"></div>
+        </div>
+        <div class="col-tit">📊 Colocações</div>
+        <div class="col-grid">
+          <div class="col-field"><label>📚 Livros</label><input type="number" min="0" id="cl_${t.id}" value="${v.cl||0}"></div>
+          <div class="col-field"><label>📰 Revistas</label><input type="number" min="0" id="cr_${t.id}" value="${v.cr||0}"></div>
+          <div class="col-field"><label>🔁 Revisitas</label><input type="number" min="0" id="cv_${t.id}" value="${v.cv||0}"></div>
+        </div></div>`;
+    });
+    h+="</div>";
+  });
+  el.innerHTML=h;
+}
+function onL(id){
+  const s=document.getElementById("lc_"+id),w=document.getElementById("wc_"+id);
+  if(s.value==="__c"){w.style.display="block";document.getElementById("lf_"+id).focus();}
+  else w.style.display="none";
+}
+function col(){
+  DIAS_BASE.forEach(cfg=>cfg.turnos.forEach(t=>{
+    const e1=document.getElementById("p1_"+t.id);
+    if(!e1)return;
+    const sl=document.getElementById("lc_"+t.id);
+    const cu=document.getElementById("lf_"+t.id);
+    const local=sl?(sl.value==="__c"?(cu?cu.value.trim():""):sl.value):"";
+    const cl=document.getElementById("cl_"+t.id);
+    const cr=document.getElementById("cr_"+t.id);
+    const cv=document.getElementById("cv_"+t.id);
+    dsn[t.id]={p1:e1.value.trim(),p2:document.getElementById("p2_"+t.id).value.trim(),local,
+      cl:cl?parseInt(cl.value)||0:0,
+      cr:cr?parseInt(cr.value)||0:0,
+      cv:cv?parseInt(cv.value)||0:0};
+  }));
+}
+
+// ── LISTAS ────────────────────────────────────────────────────────────────────
+function rD(){
+  const el=document.getElementById("listD");
+  if(!pes.length){el.innerHTML=`<p style="padding:14px;color:var(--muted);font-size:13px">Nenhuma pessoa.</p>`;return;}
+  el.innerHTML=pes.map((n,i)=>`<div class="li lil"><span class="lnum">${i+1}</span><input type="text" value="${e(n)}" placeholder="Nome completo…" oninput="pes[${i}]=this.value"><button class="bdel" onclick="rmP(${i})">×</button></div>`).join("");
+}
+function addPessoa(){pes.push("");rD();}
+function rmP(i){pes.splice(i,1);rD();}
+function rL(){
+  const el=document.getElementById("listL");
+  if(!loc.length){el.innerHTML=`<p style="padding:14px;color:var(--muted);font-size:13px">Nenhum local.</p>`;return;}
+  el.innerHTML=loc.map((l,i)=>`<div class="li lil"><span class="lnum">${i+1}</span><input type="text" value="${e(l.nome)}" placeholder="Nome do local…" oninput="loc[${i}].nome=this.value"><button class="bdel" onclick="rmL(${i})">×</button></div>`).join("");
+}
+function addLocal(){loc.push({nome:""});rL();}
+function rmL(i){loc.splice(i,1);rL();}
+
+function salvar(){col();sv("d7",dsn);sv("p8",pes);sv("l7",loc);toast("✅ Salvo!");}
+function limpar(){if(!confirm("Apagar todas as designações desta semana?"))return;dsn={};sv("d7",dsn);rP();toast("Designações limpas");}
+
+// ── WHATSAPP ──────────────────────────────────────────────────────────────────
+function gTxt(){
+  col();
+  const datas=getDatas();
+  let t="*📋 PROGRAMAÇÃO DE DESIGNAÇÕES*\n";
+  DIAS_BASE.forEach((cfg,di)=>{
+    t+=`\n📅 *${cfg.nome}  ${fmt(datas[di])}*\n`;
+    t+=cfg.modal==="QUIOSQUE"?"\n🏠 *QUIOSQUE*\n":"\n🛒 *CARRINHO*\n";
+    cfg.turnos.forEach(tr=>{
+      const v=dsn[tr.id]||{};
+      if(v.local)t+=`📍 _${v.local}_\n`;
+      t+=`⏰ *${tr.hora}*\n👥 ${v.p1||"(a definir)"}  ✦  ${v.p2||"(a definir)"}\n`;
+    });
+    t+="〰〰〰〰〰〰〰〰〰\n";
+  });
+  t+="\n_✉️ Envie sua solicitação pelo WhatsApp Particular_";
+  return t;
+}
+function rW(){
+  col();
+  const ag=new Date();
+  document.getElementById("whora").textContent=ag.getHours().toString().padStart(2,"0")+":"+ag.getMinutes().toString().padStart(2,"0")+" ✓✓";
+  const datas=getDatas();
+  let h=`<div class="wtit">📋 PROGRAMAÇÃO DE DESIGNAÇÕES</div>`;
+  DIAS_BASE.forEach((cfg,di)=>{
+    h+=`<div class="wdia">📅 ${cfg.nome}  ${fmt(datas[di])}</div>`;
+    h+=`<div><span class="wmod ${cfg.modal==="QUIOSQUE"?"wmq":"wmc"}">${cfg.modal==="QUIOSQUE"?"🏠 Quiosque":"🛒 Carrinho"}</span></div>`;
+    cfg.turnos.forEach(t=>{
+      const v=dsn[t.id]||{};
+      if(v.local)h+=`<div class="wloc">📍 ${e(v.local)}</div>`;
+      const p1=v.p1?`<span class="wnome">${e(v.p1)}</span>`:`<span class="wvaz">a definir</span>`;
+      const p2=v.p2?`<span class="wnome">${e(v.p2)}</span>`:`<span class="wvaz">a definir</span>`;
+      h+=`<div class="wt"><span class="wth">⏰ ${t.hora}</span><span class="wtn">👥 ${p1} <span style="color:#aaa;font-size:11px">✦</span> ${p2}</span></div>`;
+    });
+    if(di<DIAS_BASE.length-1)h+=`<hr class="wsep">`;
+  });
+  h+=`<div class="wrod">✉️ Envie sua solicitação pelo WhatsApp Particular</div>`;
+  document.getElementById("whtml").innerHTML=h;
+}
+function copiar(){
+  const t=gTxt();
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(()=>toast("📋 Copiado! Cole no WhatsApp")).catch(()=>fb(t));}else fb(t);
+}
+function fb(t){const ta=document.createElement("textarea");ta.value=t;ta.style.cssText="position:fixed;opacity:0;top:0;left:0";document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand("copy");toast("📋 Copiado! Cole no WhatsApp");}catch(er){toast("Não foi possível copiar");}document.body.removeChild(ta);}
+
+// ── RELATÓRIO ────────────────────────────────────────────────────────────────
+function gRelTxt(){
+  col();
+  const datas=getDatas();
+  let tLiv=0,tRev=0,tVis=0;
+  let t="*📊 RELATÓRIO DE COLOCAÇÕES*
+";
+  t+=`_Semana: ${fmt(datas[0])} – ${fmt(datas[datas.length-1])}_
+`;
+  t+="〰〰〰〰〰〰〰〰〰
+";
+  DIAS_BASE.forEach((cfg,di)=>{
+    const ico=cfg.modal==="QUIOSQUE"?"🏠":"🛒";
+    let dLiv=0,dRev=0,dVis=0;
+    t+=`
+${ico} *${cfg.nome}  ${fmt(datas[di])}*
+`;
+    cfg.turnos.forEach(tr=>{
+      const v=dsn[tr.id]||{};
+      const cl=v.cl||0,cr=v.cr||0,cv=v.cv||0;
+      dLiv+=cl;dRev+=cr;dVis+=cv;
+      if(cl||cr||cv){
+        t+=`⏰ ${tr.hora}  📚 ${cl}  📰 ${cr}  🔁 ${cv}
+`;
+      }
+    });
+    tLiv+=dLiv;tRev+=dRev;tVis+=dVis;
+    t+=`_Total: 📚 ${dLiv}  📰 ${dRev}  🔁 ${dVis}_
+`;
+  });
+  t+="〰〰〰〰〰〰〰〰〰
+";
+  t+=`
+*TOTAL GERAL DA SEMANA*
+`;
+  t+=`📚 *Livros:* ${tLiv}
+`;
+  t+=`📰 *Revistas:* ${tRev}
+`;
+  t+=`🔁 *Revisitas:* ${tVis}
+`;
+  return t;
+}
+
+function rRel(){
+  col();
+  const ag=new Date();
+  document.getElementById("relHora").textContent=ag.getHours().toString().padStart(2,"0")+":"+ag.getMinutes().toString().padStart(2,"0")+" ✓✓";
+  const datas=getDatas();
+  let tLiv=0,tRev=0,tVis=0;
+
+  let h=`<div class="wtit">📊 RELATÓRIO DE COLOCAÇÕES</div>`;
+  h+=`<div class="wloc" style="text-align:center;margin-bottom:8px">Semana: ${fmt(datas[0])} – ${fmt(datas[datas.length-1])}</div>`;
+  h+=`<hr class="wsep">`;
+
+  DIAS_BASE.forEach((cfg,di)=>{
+    const ico=cfg.modal==="QUIOSQUE"?"🏠":"🛒";
+    let dLiv=0,dRev=0,dVis=0;
+    h+=`<div class="wdia">${ico} ${cfg.nome}  ${fmt(datas[di])}</div>`;
+
+    cfg.turnos.forEach(t=>{
+      const v=dsn[t.id]||{};
+      const cl=v.cl||0,cr=v.cr||0,cv=v.cv||0;
+      dLiv+=cl;dRev+=cr;dVis+=cv;
+      h+=`<div class="wt" style="flex-direction:column;align-items:flex-start;gap:4px">
+        <span class="wth" style="min-width:unset">⏰ ${t.hora}</span>
+        <div style="display:flex;gap:12px;padding-left:2px">
+          <span style="font-size:12px">📚 <b>${cl}</b></span>
+          <span style="font-size:12px">📰 <b>${cr}</b></span>
+          <span style="font-size:12px">🔁 <b>${cv}</b></span>
+        </div>
+      </div>`;
+    });
+    tLiv+=dLiv;tRev+=dRev;tVis+=dVis;
+    h+=`<div style="font-size:11px;color:#667781;font-style:italic;padding:2px 2px 8px">
+      Total do dia — 📚 ${dLiv} · 📰 ${dRev} · 🔁 ${dVis}
+    </div>`;
+    h+=`<hr class="wsep">`;
+  });
+
+  h+=`<div style="margin-top:6px">
+    <div style="font-weight:700;font-size:13px;color:#1F3864;margin-bottom:8px">📊 Total Geral da Semana</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+      <div style="background:#EBF4FF;border-radius:10px;padding:8px;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:#1F3864">${tLiv}</div>
+        <div style="font-size:10px;color:#555;margin-top:2px">📚 Livros</div>
+      </div>
+      <div style="background:#FFF0E5;border-radius:10px;padding:8px;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:#7B3600">${tRev}</div>
+        <div style="font-size:10px;color:#555;margin-top:2px">📰 Revistas</div>
+      </div>
+      <div style="background:#D5F5E3;border-radius:10px;padding:8px;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:#196F3D">${tVis}</div>
+        <div style="font-size:10px;color:#555;margin-top:2px">🔁 Revisitas</div>
+      </div>
+    </div>
+  </div>`;
+
+  document.getElementById("relBody").innerHTML=h;
+}
+
+function copiarRel(){
+  const t=gRelTxt();
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(()=>toast("📋 Copiado! Cole no WhatsApp")).catch(()=>fb(t));}else fb(t);
+}
+
+function e(s){return(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");}
+let tt;
+function toast(m){const el=document.getElementById("tst");el.textContent=m;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),2500);}
+
+function exportar(){
+  salvar();
+  const dados={pes,loc,dsn,sem:semISO};
+  const blob=new Blob([JSON.stringify(dados,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  const hoje=new Date();
+  const nome="designacoes_"+hoje.getFullYear()+String(hoje.getMonth()+1).padStart(2,"0")+String(hoje.getDate()).padStart(2,"0")+".json";
+  a.href=url;a.download=nome;a.click();
+  URL.revokeObjectURL(url);
+  toast("📤 Cópia exportada!");
+}
+function importar(ev){
+  const file=ev.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const d=JSON.parse(e.target.result);
+      if(d.pes) pes=d.pes;
+      if(d.loc) loc=d.loc;
+      if(d.dsn) dsn=d.dsn;
+      if(d.sem){semISO=d.sem;sv("sem_v2",semISO);}
+      salvar();rCal();rP();rD();rL();
+      toast("✅ Dados restaurados!");
+    }catch(err){toast("❌ Ficheiro inválido");}
+  };
+  reader.readAsText(file);
+  ev.target.value="";
+}
+
+rCal();rP();
+window.addEventListener("beforeunload",salvar);
+</script>
+</body>
+</html>
